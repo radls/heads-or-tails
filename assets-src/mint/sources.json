@@ -1,0 +1,112 @@
+[
+ {
+  "key": "penny_obv",
+  "file": "penny_obv.png",
+  "title": "File:2005-Penny-Uncirculated-Obverse.png",
+  "page": "https://commons.wikimedia.org/wiki/File:2005-Penny-Uncirculated-Obverse.png",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/8/84/2005-Penny-Uncirculated-Obverse.png",
+  "license": "Public domain",
+  "author": "United States Mint",
+  "credit": "United States Mint"
+ },
+ {
+  "key": "penny_rev",
+  "file": "penny_rev.png",
+  "title": "File:2005 Penny Rev Unc D.png",
+  "page": "https://commons.wikimedia.org/wiki/File:2005_Penny_Rev_Unc_D.png",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/2005_Penny_Rev_Unc_D.png",
+  "license": "Public domain",
+  "author": "United States Mint",
+  "credit": "United States Mint"
+ },
+ {
+  "key": "dime_obv",
+  "file": "dime_obv.png",
+  "title": "File:Dime Obverse 13.png",
+  "page": "https://commons.wikimedia.org/wiki/File:Dime_Obverse_13.png",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/3/3c/Dime_Obverse_13.png",
+  "license": "Public domain",
+  "author": "United States Mint",
+  "credit": "http://www.usmint.gov/pressroom/index.cfm?flash=no&amp;action=photo#Pres"
+ },
+ {
+  "key": "dime_rev",
+  "file": "dime_rev.png",
+  "title": "File:Dime Reverse 13.png",
+  "page": "https://commons.wikimedia.org/wiki/File:Dime_Reverse_13.png",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/7/79/Dime_Reverse_13.png",
+  "license": "Public domain",
+  "author": "United States Mint",
+  "credit": "http://www.usmint.gov/pressroom/index.cfm?flash=no&amp;action=photo#Pres"
+ },
+ {
+  "key": "quarter_obv",
+  "file": "quarter_obv.jpg",
+  "title": "File:1932 Washington quarter obverse.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:1932_Washington_quarter_obverse.jpg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/c/c2/1932_Washington_quarter_obverse.jpg",
+  "license": "Public domain",
+  "author": "Numismatic Guaranty Corporation",
+  "credit": "https://www.ngccoin.com/coin-explorer/washington-quarters-pscid-38/1932-25c-ms-coinid-15790"
+ },
+ {
+  "key": "quarter_rev",
+  "file": "quarter_rev.jpg",
+  "title": "File:1932 Washington quarter reverse.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:1932_Washington_quarter_reverse.jpg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/7/77/1932_Washington_quarter_reverse.jpg",
+  "license": "Public domain",
+  "author": "Numismatic Guaranty Corporation",
+  "credit": "https://www.ngccoin.com/coin-explorer/washington-quarters-pscid-38/1932-25c-ms-coinid-15790"
+ },
+ {
+  "key": "half_obv",
+  "file": "half_obv.png",
+  "title": "File:US 50 Cent Obv.png",
+  "page": "https://commons.wikimedia.org/wiki/File:US_50_Cent_Obv.png",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/e/e5/US_50_Cent_Obv.png",
+  "license": "Public domain",
+  "author": "United States Mint",
+  "credit": "http://www.usmint.gov/pressroom/index.cfm?flash=no&amp;action=photo#Pres"
+ },
+ {
+  "key": "half_rev",
+  "file": "half_rev.png",
+  "title": "File:US 50 Cent Rev.png",
+  "page": "https://commons.wikimedia.org/wiki/File:US_50_Cent_Rev.png",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/2/2d/US_50_Cent_Rev.png",
+  "license": "Public domain",
+  "author": "United States Mint",
+  "credit": "http://www.usmint.gov/pressroom/index.cfm?flash=no&amp;action=photo#Pres"
+ },
+ {
+  "key": "dollar_rev",
+  "file": "dollar_rev.png",
+  "title": "File:2003 Sacagawea Rev.png",
+  "page": "https://commons.wikimedia.org/wiki/File:2003_Sacagawea_Rev.png",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/5/54/2003_Sacagawea_Rev.png",
+  "license": "Public domain",
+  "author": "United States Mint",
+  "credit": "United States Mint Historical Image Library"
+ },
+ {
+  "key": "nickel_obv",
+  "file": "nickel_obv.jpg",
+  "title": "File:NNC-US-1938-5C-Jefferson Nickel.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:NNC-US-1938-5C-Jefferson_Nickel.jpg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/NNC-US-1938-5C-Jefferson_Nickel.jpg",
+  "license": "Public domain",
+  "author": "US Mint (coin, Felix Schlag 1938 design), National Numismatic Collection, Smithsonian (photograph by Jaclyn Nash)",
+  "credit": "cropped half of the two-sided photo"
+ },
+ {
+  "key": "nickel_rev",
+  "file": "nickel_rev.jpg",
+  "title": "File:NNC-US-1938-5C-Jefferson Nickel.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:NNC-US-1938-5C-Jefferson_Nickel.jpg",
+  "url": "https://upload.wikimedia.org/wikipedia/commons/f/f5/NNC-US-1938-5C-Jefferson_Nickel.jpg",
+  "license": "Public domain",
+  "author": "US Mint (coin, Felix Schlag 1938 design), National Numismatic Collection, Smithsonian (photograph by Jaclyn Nash)",
+  "credit": "cropped half of the two-sided photo"
+ }
+]
