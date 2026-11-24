@@ -5,7 +5,7 @@
  */
 export function framing(aspect, fovDeg = 30) {
   const safe = Number.isFinite(aspect) && aspect > 0.2 ? aspect : 1;
-  const targetWidth = safe < 0.8 ? 72 : safe < 1.2 ? 96 : 118;
+  const targetWidth = safe < 0.8 ? 52 : safe < 1.2 ? 84 : 110;
   const fov = fovDeg;
   const v = (fov * Math.PI) / 180;
   const h = 2 * Math.atan(Math.tan(v / 2) * safe);

@@ -30,6 +30,7 @@ import {
   Vector2,
   Vector3,
   WebGLRenderer,
+  Fog,
 } from "three";
 import { buildCoinGeometries } from "./coin-geometry.js";
 import { framing } from "./frame.js";
@@ -71,6 +72,12 @@ function fillCanvas(paint) {
   return canvas;
 }
 
+function hash2(x, y) {
+  let h = (x * 374761393 + y * 668265263) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+
 function tableCanvases() {
   return {
     wood: fillCanvas((x, y) => {
@@ -78,8 +85,10 @@ function tableCanvases() {
       // camera looks along the table.
       const blot = Math.sin(x * 0.016 + y * 0.011) * 0.55 + Math.sin(x * 0.008 - y * 0.012) * 0.45;
       const soft = Math.sin(x * 0.031 + y * 0.027);
-      const v = 0.5 + blot * 0.08 + soft * 0.035;
-      return [84 + v * 46, 50 + v * 26, 28 + v * 14];
+      // Per-pixel grain averages out in the mipmaps instead of banding.
+      const grain = (hash2(x, y) - 0.5) * 0.12 + Math.sin(y * 0.9 + Math.sin(x * 0.05) * 3) * 0.03;
+      const v = 0.5 + blot * 0.06 + soft * 0.025 + grain;
+      return [40 + v * 28, 24 + v * 15, 14 + v * 8];
     }),
     felt: fillCanvas((x, y) => {
       const n = Math.sin(x * 0.17 + y * 0.11) * Math.sin(y * 0.13);
@@ -99,7 +108,7 @@ function makeTableTexture(canvas, renderer) {
   tex.colorSpace = SRGBColorSpace;
   tex.wrapS = RepeatWrapping;
   tex.wrapT = RepeatWrapping;
-  tex.repeat.set(3, 3);
+  tex.repeat.set(2, 2);
   tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
   tex.needsUpdate = true;
   return tex;
@@ -121,6 +130,9 @@ function studioEnvironment(renderer) {
   add(3.5, 6, 0xffe2b5, 9, 5.5, 3.2, -3.4);
   add(10, 6, 0xc4a078, 2.4, 0, -3.2, 1.5);
   add(7, 2.4, 0xffffff, 7, -1, 7.2, -1);
+  // Broad softbox behind the coin: a resting coin seen from the front-top
+  // mirrors this region, so without it the faces read as near-black.
+  add(14, 6, 0xfff1dc, 1.6, 0, 3.6, -7.5);
   const pmrem = new PMREMGenerator(renderer);
   const target = pmrem.fromScene(studio, 0.08, 0.1, 40);
   pmrem.dispose();
@@ -161,13 +173,15 @@ export function createStage(canvas) {
   });
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.08;
+  renderer.toneMappingExposure = 0.95;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = PCFShadowMap;
   renderer.setClearColor(0x14110e, 1);
 
   const scene = new Scene();
   scene.background = new Color(0x14110e);
+  // The table falls off into the dark backdrop instead of a flat bright plane.
+  scene.fog = new Fog(0x14110e, 190, 620);
   let envTarget = null;
   try {
     envTarget = studioEnvironment(renderer);
@@ -184,9 +198,9 @@ export function createStage(canvas) {
   const wantPos = new Vector3();
   const wantLook = new Vector3();
 
-  const hemi = new HemisphereLight(0xfff4e6, 0x2a241e, 0.45);
+  const hemi = new HemisphereLight(0xfff4e6, 0x2a241e, 0.3);
   scene.add(hemi);
-  const sun = new DirectionalLight(0xfff7ee, 3.2);
+  const sun = new DirectionalLight(0xfff7ee, 2.6);
   sun.castShadow = true;
   sun.shadow.mapSize.set(1024, 1024);
   sun.shadow.camera.near = 20;
@@ -631,26 +645,55 @@ export function createStage(canvas) {
 }
 
 export function reliefThumb(coin, image) {
-  const canvas = document.createElement("canvas");
-  canvas.width = 128;
-  canvas.height = 128;
-  const ctx = canvas.getContext("2d");
-  ctx.beginPath();
-  ctx.arc(64, 64, 60, 0, Math.PI * 2);
-  ctx.fillStyle = coin.color;
-  ctx.fill();
-  ctx.save();
-  ctx.clip();
-  ctx.globalCompositeOperation = "screen";
-  ctx.globalAlpha = 0.72;
-  ctx.drawImage(image, 4, 4, 120, 120);
-  ctx.restore();
-  ctx.beginPath();
-  ctx.arc(64, 64, 60, 0, Math.PI * 2);
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = "rgba(255, 246, 230, 0.8)";
-  ctx.stroke();
-  return canvas.toDataURL("image/png");
+  // Emboss-shade the relief map with a raking light so silver and gold
+  // thumbnails keep their contrast instead of washing out to white.
+  const size = 128;
+  const src = document.createElement("canvas");
+  src.width = size;
+  src.height = size;
+  const sctx = src.getContext("2d", { willReadFrequently: true });
+  sctx.drawImage(image, 0, 0, size, size);
+  const h = sctx.getImageData(0, 0, size, size).data;
+  const out = sctx.createImageData(size, size);
+  const px = out.data;
+  const base = hexRgb(coin.color);
+  const at = (x, y) => h[(Math.min(size - 1, Math.max(0, y)) * size + Math.min(size - 1, Math.max(0, x))) * 4] / 255;
+  const c = size / 2;
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const i = (y * size + x) * 4;
+      const r = Math.hypot(x - c + 0.5, y - c + 0.5) / (c - 3);
+      if (r > 1) {
+        px[i + 3] = 0;
+        continue;
+      }
+      const dx = at(x + 1, y) - at(x - 1, y);
+      const dy = at(x, y + 1) - at(x, y - 1);
+      const light = Math.max(-1, Math.min(1, (-dx * 0.7 - dy * 0.7) * 3.2));
+      const height = at(x, y);
+      const sheen = 1 - 0.35 * Math.min(1, Math.hypot(x - c * 0.7, y - c * 0.6) / size);
+      const k = (0.5 + 0.22 * height + 0.42 * light) * sheen;
+      px[i] = Math.min(255, base[0] * k + 40 * Math.max(0, light));
+      px[i + 1] = Math.min(255, base[1] * k + 36 * Math.max(0, light));
+      px[i + 2] = Math.min(255, base[2] * k + 30 * Math.max(0, light));
+      px[i + 3] = r > 0.985 ? Math.round(255 * (1 - (r - 0.985) / 0.015)) : 255;
+    }
+  }
+  sctx.clearRect(0, 0, size, size);
+  sctx.putImageData(out, 0, 0);
+  sctx.beginPath();
+  sctx.arc(c, c, c - 3, 0, Math.PI * 2);
+  sctx.lineWidth = 2;
+  sctx.strokeStyle = "rgba(20, 16, 12, 0.55)";
+  sctx.stroke();
+  return src.toDataURL("image/png");
+}
+
+function hexRgb(color) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(color).trim());
+  if (!m) return [190, 190, 190];
+  const n = parseInt(m[1], 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
 export function proceduralThumb(coin) {

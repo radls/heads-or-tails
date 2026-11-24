@@ -255,12 +255,16 @@ html[data-motion="full"] #result.show {
 .coin-short, .coin-value {
   display: block;
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-align: center;
 }
 
-.coin-short { font-size: 13px; }
+.coin-short {
+  font-size: 13px;
+  line-height: 1.2;
+  min-height: 2.4em;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
 .coin-value { color: var(--gold); font-size: 12px; letter-spacing: 0.06em; }
 
 .tally {
