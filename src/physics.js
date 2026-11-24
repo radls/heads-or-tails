@@ -1,4 +1,3 @@
-import RAPIER from "@dimforge/rapier3d-compat";
 import { faceFromQuaternion, faceUpDot, flattenQuaternion, rotateVector } from "./face.js";
 
 /** Fixed step. Fast mode runs more of these per frame; it does not change dt. */
@@ -8,9 +7,16 @@ export const SIM_TIMEOUT = 8;
 const GRAVITY = 9810;
 
 let initPromise = null;
+let RAPIER = null;
 
 export function initPhysics() {
-  initPromise ??= RAPIER.init().then(() => RAPIER);
+  // Rapier (Rust -> WASM) loads lazily as its own chunk plus a separate .wasm file.
+  initPromise ??= import("@dimforge/rapier3d").then(async (mod) => {
+    const api = mod.default && mod.default.World ? mod.default : mod;
+    if (typeof api.init === "function") await api.init(); // compat build (tests)
+    RAPIER = api;
+    return api;
+  });
   return initPromise;
 }
 
