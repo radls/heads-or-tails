@@ -74,11 +74,12 @@ function fillCanvas(paint) {
 function tableCanvases() {
   return {
     wood: fillCanvas((x, y) => {
-      const along = Math.sin(x * 0.01) * 10;
-      const plank = Math.sin((y + along) * 0.04);
-      const fiber = Math.sin((y + along) * 0.55 + x * 0.02);
-      const v = 0.48 + plank * 0.1 + fiber * 0.035;
-      return [96 + v * 48, 58 + v * 28, 32 + v * 16];
+      const along = Math.sin(x * 0.013) * 7;
+      const yy = y + along;
+      const seam = (0.5 + 0.5 * Math.sin(yy * 0.042)) ** 14;
+      const fiber = Math.sin(yy * 0.9 + x * 0.04) * 0.62 + Math.sin(yy * 2.15 + x * 0.18) * 0.38;
+      const v = 0.46 + fiber * 0.11 - seam * 0.2;
+      return [58 + v * 72, 34 + v * 40, 18 + v * 20];
     }),
     felt: fillCanvas((x, y) => {
       const n = Math.sin(x * 0.17 + y * 0.11) * Math.sin(y * 0.13);
@@ -559,24 +560,35 @@ export function createStage(canvas) {
         coin.quaternion.copy(restQuat);
       }
 
-      wantPos.copy(homePos);
-      wantLook.copy(homeLook);
-      if (!reduced && !inspect.active && !inspect.returning && (phase === "flying" || phase === "settling")) {
-        const lift = Math.max(0, restPos.y);
-        const pull = 1 + Math.min(0.5, lift / 420);
-        wantPos.set(restPos.x * 0.4, homePos.y + Math.min(24, lift * 0.04), homePos.z * pull);
-        wantLook.set(restPos.x * 0.5, Math.min(26, Math.max(1.2, restPos.y * 0.3)), restPos.z * 0.35);
-      } else if (!reduced && !inspect.active && !inspect.returning) {
-        wantPos.set(restPos.x * 0.18, homePos.y, homePos.z);
-        wantLook.set(restPos.x * 0.3, 1.2, restPos.z * 0.18);
+      const framingCoin = !reduced && !inspect.active && !inspect.returning;
+      if (framingCoin) {
+        const flying = phase === "flying" || phase === "settling";
+        const lift = Math.max(0, restPos.y - 1.2);
+        const lookY = flying ? 1.2 + lift * 0.68 : 1.2;
+        wantLook.set(restPos.x, lookY, restPos.z);
+        const offsetX = homePos.x - homeLook.x;
+        const offsetY = homePos.y - homeLook.y;
+        const offsetZ = homePos.z - homeLook.z;
+        const dist0 = Math.hypot(offsetX, offsetY, offsetZ) || 1;
+        const halfFov = Math.tan((camera.fov * Math.PI) / 360);
+        const span = (coinDef ? coinDef.diameter : 24) * 0.55;
+        const above = Math.max(0, restPos.y - lookY + span);
+        const dist = Math.max(dist0, above / (halfFov * 0.7));
+        const scale = dist / dist0;
+        wantPos.set(wantLook.x + offsetX * scale, wantLook.y + offsetY * scale, wantLook.z + offsetZ * scale);
+      } else if (reduced) {
+        wantPos.copy(homePos);
+        wantLook.copy(homeLook);
       }
-      if (reduced || step === 0) {
-        if (reduced) {
-          camPos.copy(homePos);
-          camLook.copy(homeLook);
-        }
+      if (reduced) {
+        camPos.copy(homePos);
+        camLook.copy(homeLook);
+      } else if (step === 0 && !inspect.active && !inspect.returning) {
+        camPos.copy(wantPos);
+        camLook.copy(wantLook);
       } else {
-        const k = 1 - Math.pow(0.015, step);
+        const rate = phase === "flying" || phase === "settling" ? 14 : 7;
+        const k = 1 - Math.exp(-rate * Math.max(step, 0.001));
         camPos.lerp(wantPos, Math.min(1, k));
         camLook.lerp(wantLook, Math.min(1, k));
       }

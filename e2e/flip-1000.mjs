@@ -161,9 +161,11 @@ try {
     const state = window.__hot.state();
     return state === "flying" || state === "settling";
   });
+  await page.waitForTimeout(280);
   await page.screenshot({ path: "evidence/phone-midair.png" });
   await page.waitForFunction(() => window.__hot.state() === "idle", null, { timeout: 15000 });
   await page.waitForFunction(() => /HEADS|TAILS/.test(document.getElementById("result").textContent || ""));
+  await page.waitForTimeout(420);
   await page.screenshot({ path: "evidence/phone-result.png" });
 
   await page.mouse.click(cx, box.y + box.height * 0.82);
@@ -235,6 +237,7 @@ try {
   await desk.waitForFunction(() => /HEADS|TAILS/.test(document.getElementById("result").textContent || ""), null, {
     timeout: 15000,
   });
+  await desk.waitForTimeout(420);
   await desk.screenshot({ path: "evidence/desktop-result.png" });
   const dbox = await desk.locator("#view").boundingBox();
   await desk.mouse.click(dbox.x + dbox.width / 2, dbox.y + dbox.height / 2);

@@ -141,7 +141,14 @@ export function createSimulation(coin, rng) {
     const hz = sim.rng.signed(horiz);
     const safeY = sim.coin.diameter / 2 + 3;
     const pos = sim.body.translation();
-    sim.body.setTranslation({ x: pos.x, y: Math.max(pos.y, safeY), z: pos.z }, true);
+    // A long session would random-walk into the wall and wedge. Start the
+    // toss near the middle of the table once it has drifted out of view.
+    const drifted = Math.hypot(pos.x, pos.z) > 90;
+    sim.body.setTranslation({
+      x: drifted ? 0 : pos.x,
+      y: Math.max(pos.y, safeY),
+      z: drifted ? 0 : pos.z,
+    }, true);
     const axisAngle = sim.rng.range(0, Math.PI * 2);
     const ax = Math.cos(axisAngle);
     const az = Math.sin(axisAngle);
@@ -167,6 +174,7 @@ export function createSimulation(coin, rng) {
     sim.settleHold = 0;
     sim.result = null;
     sim.nudgedForTimeout = false;
+    sim._poseY = null;
     sim.prevSpeed = Math.hypot(hx, vy, hz);
     sim.body.setEnabled(true);
   };
@@ -216,6 +224,7 @@ export function createSimulation(coin, rng) {
       return { impact: 0, phase: "idle", settled: false, face: faceFromQuaternion(sim.body.rotation()), rattle: false };
     }
     world.timestep = FIXED_DT;
+    if (sim.body.isSleeping()) sim.body.wakeUp();
     world.step(eventQueue);
     let contacted = false;
     eventQueue.drainCollisionEvents((_a, _b, started) => {
@@ -234,6 +243,17 @@ export function createSimulation(coin, rng) {
       sim.body.setLinvel({ x: linNow.x * scale, y: linNow.y, z: linNow.z * scale }, true);
       linNow = sim.body.linvel();
     }
+    if (pos.y < -1.5) {
+      // Normal contact overlaps by a millimetre or two. Several millimetres
+      // under the floor means the solver lost the coin. Lift it back onto
+      // the table. This is not an arena escape, so it is not a recovery.
+      const half = sim.coin.thickness / 2;
+      sim.body.setTranslation({ x: pos.x, y: half + 0.4, z: pos.z }, true);
+      sim.body.setLinvel({ x: linNow.x * 0.3, y: 0, z: linNow.z * 0.3 }, true);
+      sim.body.wakeUp();
+      pos = sim.body.translation();
+      linNow = sim.body.linvel();
+    }
     if (pos.y < -12 || Math.abs(pos.x) > arena + 30 || Math.abs(pos.z) > arena + 30) {
       sim.recoveries += 1;
       const half = sim.coin.thickness / 2;
@@ -247,6 +267,24 @@ export function createSimulation(coin, rng) {
       );
       sim.body.setLinvel({ x: linNow.x * 0.15, y: Math.abs(linNow.y) * 0.2 + 80, z: linNow.z * 0.15 }, true);
       pos = sim.body.translation();
+    }
+
+    // Keep the cylinder out of the wall volume. A deep overlap freezes the
+    // solver with the coin still tilted, and then no impulse can unstick it.
+    {
+      const limit = arena - sim.coin.diameter / 2 - 1.5;
+      if (Math.abs(pos.x) > limit || Math.abs(pos.z) > limit) {
+        sim.body.setTranslation(
+          {
+            x: Math.max(-limit, Math.min(limit, pos.x)),
+            y: Math.max(pos.y, sim.coin.thickness / 2 + 0.4),
+            z: Math.max(-limit, Math.min(limit, pos.z)),
+          },
+          true,
+        );
+        sim.body.setLinvel({ x: linNow.x * 0.25, y: Math.max(linNow.y, 20), z: linNow.z * 0.25 }, true);
+        pos = sim.body.translation();
+      }
     }
 
     const lin = sim.body.linvel();
@@ -269,35 +307,53 @@ export function createSimulation(coin, rng) {
       sim.phase = "settling";
     }
 
-    // Cylinder colliders have no rim to catch, so an edge spin can sing forever.
-    // Bleed it only while the coin is nearly on edge. That does not pick a face.
+    // Cylinder colliders have no rim, and body damping alone cannot kill a
+    // 30 rev/s tumble before the timeout. Bleed spin only after the coin is
+    // on the table. The tip runs once the tumble is already slow, and only
+    // reinforces the face that is already winning.
     if (sim.phase === "settling" && onTable) {
       const absUp = Math.abs(up);
       if (absUp < 0.4) {
-        const bleed = angSpeed > 8 ? 0.985 : 0.97;
+        const bleed = angSpeed > 8 ? 0.97 : 0.955;
         sim.body.setAngvel({ x: ang.x * bleed, y: ang.y * bleed, z: ang.z * bleed }, false);
-      } else if (absUp >= 0.2 && absUp < 0.9 && angSpeed < 18 && speed < 500) {
+        if (speed > 60) sim.body.setLinvel({ x: lin.x * 0.99, y: lin.y, z: lin.z * 0.99 }, false);
+      } else if (angSpeed > 3.2 || speed > 240) {
+        const bleed = angSpeed > 24 ? 0.955 : angSpeed > 8 ? 0.975 : 0.988;
+        sim.body.setAngvel({ x: ang.x * bleed, y: ang.y * 0.994, z: ang.z * bleed }, false);
+        if (speed > 90) sim.body.setLinvel({ x: lin.x * 0.986, y: lin.y, z: lin.z * 0.986 }, false);
+      } else if (absUp >= 0.2 && absUp < 0.92) {
         const u = rotateVector(q, 0, 1, 0);
         const sign = up > 0 ? 1 : -1;
         // ω = u × (sign * world up) lays the winning face down. The opposite
         // cross product would tip the coin onto the other side.
-        const add = 22 * FIXED_DT;
+        const add = 34 * FIXED_DT * (0.35 + (0.92 - absUp));
         sim.body.setAngvel(
           {
-            x: ang.x * 0.992 - sign * u.z * add,
-            y: ang.y * 0.996,
-            z: ang.z * 0.992 + sign * u.x * add,
+            x: ang.x * 0.95 - sign * u.z * add,
+            y: ang.y * 0.985,
+            z: ang.z * 0.95 + sign * u.x * add,
           },
           false,
         );
-      } else if (absUp > 0.9 && speed < 500) {
-        sim.body.setLinvel({ x: lin.x * 0.988, y: lin.y, z: lin.z * 0.988 }, false);
-        sim.body.setAngvel({ x: ang.x * 0.975, y: ang.y * 0.99, z: ang.z * 0.975 }, false);
+      } else if (absUp >= 0.92) {
+        sim.body.setLinvel({ x: lin.x * 0.972, y: lin.y, z: lin.z * 0.972 }, false);
+        sim.body.setAngvel({ x: ang.x * 0.95, y: ang.y * 0.985, z: ang.z * 0.95 }, false);
       }
     }
 
     const absUp = Math.abs(up);
-    const calm = onTable && speed < 45 && angSpeed < 1.6 && Math.abs(lin.y) < 35;
+    // "On the table" for an edge spin is about one radius up. Settled means
+    // the center is actually down at the face. One gravity substep is ~41 mm/s,
+    // so a coin that is already lying there still reports that residual.
+    const resting = pos.y <= sim.coin.thickness / 2 + 1.25;
+    if (sim.phase === "settling" && resting && absUp > 0.92 && Math.abs(lin.y) < 120 && angSpeed < 2) {
+      sim.body.setLinvel({ x: lin.x * 0.85, y: 0, z: lin.z * 0.85 }, true);
+    }
+    const linEnd = sim.body.linvel();
+    const angEnd = sim.body.angvel();
+    const speedEnd = Math.hypot(linEnd.x, linEnd.y, linEnd.z);
+    const angEndSpeed = Math.hypot(angEnd.x, angEnd.y, angEnd.z);
+    const calm = resting && speedEnd < 80 && angEndSpeed < 1.6 && Math.abs(linEnd.y) < 80;
     let settled = false;
     if (calm && absUp >= 0.85) {
       sim.settleHold += FIXED_DT;
@@ -311,7 +367,18 @@ export function createSimulation(coin, rng) {
         nudge();
         sim.settleHold = 0;
       }
-    } else if (speed > 140 || angSpeed > 10 || !onTable) {
+    } else if (onTable && absUp < 0.85 && speedEnd < 25 && angEndSpeed < 0.7) {
+      // Stopped, but still propped up. A wedged solver will eat a tiny
+      // torque, so this is a real angular velocity plus a small lift.
+      sim.settleHold += FIXED_DT;
+      if (sim.settleHold > 0.18) {
+        const u = rotateVector(q, 0, 1, 0);
+        const sign = up > 0 ? 1 : -1;
+        sim.body.setAngvel({ x: -sign * u.z * 7, y: 0, z: sign * u.x * 7 }, true);
+        sim.body.setTranslation({ x: pos.x, y: pos.y + 0.8, z: pos.z }, true);
+        sim.settleHold = 0;
+      }
+    } else if (speedEnd > 140 || angEndSpeed > 10 || !onTable) {
       sim.settleHold = 0;
     }
 
