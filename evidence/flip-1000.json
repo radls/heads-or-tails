@@ -1,0 +1,57 @@
+{
+  "pass": false,
+  "url": "http://127.0.0.1:4180/heads-or-tails/",
+  "total": 1000,
+  "heads": 476,
+  "tails": 524,
+  "headsShare": 0.476,
+  "forced": 2,
+  "perCoin": {
+    "penny": {
+      "heads": 77,
+      "tails": 66
+    },
+    "nickel": {
+      "heads": 64,
+      "tails": 79
+    },
+    "dime": {
+      "heads": 75,
+      "tails": 68
+    },
+    "quarter": {
+      "heads": 73,
+      "tails": 70
+    },
+    "half": {
+      "heads": 55,
+      "tails": 88
+    },
+    "dollar": {
+      "heads": 73,
+      "tails": 70
+    },
+    "house": {
+      "heads": 59,
+      "tails": 83
+    }
+  },
+  "settleMs": {
+    "p50": 14.8,
+    "p90": 24,
+    "p99": 36
+  },
+  "simSeconds": {
+    "p50": 1.05,
+    "p90": 1.2125,
+    "p99": 1.8542,
+    "max": 8.7542
+  },
+  "maxSimSeconds": 8.7542,
+  "fps": 0,
+  "consoleErrors": [],
+  "failures": [
+    "forced 2",
+    "page.waitForFunction: Timeout 20000ms exceeded.\n    at /workspace/heads-or-tails/e2e/flip-1000.mjs:177:14"
+  ]
+}
