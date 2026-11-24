@@ -161,7 +161,7 @@ try {
     const state = window.__hot.state();
     return state === "flying" || state === "settling";
   });
-  await page.waitForTimeout(280);
+  await page.waitForTimeout(360);
   await page.screenshot({ path: "evidence/phone-midair.png" });
   await page.waitForFunction(() => window.__hot.state() === "idle", null, { timeout: 15000 });
   await page.waitForFunction(() => /HEADS|TAILS/.test(document.getElementById("result").textContent || ""));

@@ -1,57 +1,54 @@
 {
-  "pass": false,
+  "pass": true,
   "url": "http://127.0.0.1:4180/heads-or-tails/",
   "total": 1000,
-  "heads": 476,
-  "tails": 524,
-  "headsShare": 0.476,
-  "forced": 2,
+  "heads": 512,
+  "tails": 488,
+  "headsShare": 0.512,
+  "forced": 0,
   "perCoin": {
     "penny": {
-      "heads": 77,
-      "tails": 66
+      "heads": 70,
+      "tails": 73
     },
     "nickel": {
-      "heads": 64,
-      "tails": 79
+      "heads": 76,
+      "tails": 67
     },
     "dime": {
-      "heads": 75,
-      "tails": 68
+      "heads": 72,
+      "tails": 71
     },
     "quarter": {
-      "heads": 73,
-      "tails": 70
+      "heads": 63,
+      "tails": 80
     },
     "half": {
-      "heads": 55,
-      "tails": 88
+      "heads": 76,
+      "tails": 67
     },
     "dollar": {
-      "heads": 73,
-      "tails": 70
+      "heads": 83,
+      "tails": 60
     },
     "house": {
-      "heads": 59,
-      "tails": 83
+      "heads": 72,
+      "tails": 70
     }
   },
   "settleMs": {
-    "p50": 14.8,
-    "p90": 24,
-    "p99": 36
+    "p50": 15.2,
+    "p90": 22.4,
+    "p99": 30.2
   },
   "simSeconds": {
-    "p50": 1.05,
-    "p90": 1.2125,
-    "p99": 1.8542,
-    "max": 8.7542
+    "p50": 1.025,
+    "p90": 1.1708,
+    "p99": 1.2792,
+    "max": 1.6208
   },
-  "maxSimSeconds": 8.7542,
-  "fps": 0,
+  "maxSimSeconds": 1.6208,
+  "fps": 8.07,
   "consoleErrors": [],
-  "failures": [
-    "forced 2",
-    "page.waitForFunction: Timeout 20000ms exceeded.\n    at /workspace/heads-or-tails/e2e/flip-1000.mjs:177:14"
-  ]
+  "failures": []
 }

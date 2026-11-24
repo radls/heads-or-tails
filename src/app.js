@@ -96,8 +96,12 @@ export async function startApp({ canvas, ui }) {
   function frame(now) {
     raf = 0;
     if (hidden) return;
-    const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
+    const wall = Math.max(0, (now - last) / 1000);
     last = now;
+    // Physics stays on the fixed step. The camera uses the real gap so a
+    // slow frame still catches the coin instead of leaving it above the view.
+    const dt = Math.min(0.05, wall);
+    const cameraDt = Math.min(0.3, wall);
     if (!fast && (sim.phase === "flying" || sim.phase === "settling")) {
       acc += dt;
       let steps = 0;
@@ -111,7 +115,7 @@ export async function startApp({ canvas, ui }) {
       if (sim.result) finishFlip();
     }
     stage.syncBody(sim.body);
-    stage.update(dt, sim.phase);
+    stage.update(cameraDt, sim.phase);
     stage.render();
     if (stage.needsFrame(sim.phase) || sim.phase !== "idle") wake();
   }
@@ -342,6 +346,7 @@ export async function startApp({ canvas, ui }) {
       return;
     }
     if (gesture.type === "tap" && stage.hit(event.clientX, event.clientY)) {
+      ui.clearResult();
       stage.enterInspect();
       ui.setInspecting(true);
       wake();

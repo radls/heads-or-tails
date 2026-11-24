@@ -74,12 +74,12 @@ function fillCanvas(paint) {
 function tableCanvases() {
   return {
     wood: fillCanvas((x, y) => {
-      const along = Math.sin(x * 0.013) * 7;
-      const yy = y + along;
-      const seam = (0.5 + 0.5 * Math.sin(yy * 0.042)) ** 14;
-      const fiber = Math.sin(yy * 0.9 + x * 0.04) * 0.62 + Math.sin(yy * 2.15 + x * 0.18) * 0.38;
-      const v = 0.46 + fiber * 0.11 - seam * 0.2;
-      return [58 + v * 72, 34 + v * 40, 18 + v * 20];
+      // Broad blotches only. Fine horizontal waves turn into stripes once the
+      // camera looks along the table.
+      const blot = Math.sin(x * 0.016 + y * 0.011) * 0.55 + Math.sin(x * 0.008 - y * 0.012) * 0.45;
+      const soft = Math.sin(x * 0.031 + y * 0.027);
+      const v = 0.5 + blot * 0.08 + soft * 0.035;
+      return [84 + v * 46, 50 + v * 26, 28 + v * 14];
     }),
     felt: fillCanvas((x, y) => {
       const n = Math.sin(x * 0.17 + y * 0.11) * Math.sin(y * 0.13);
@@ -564,7 +564,7 @@ export function createStage(canvas) {
       if (framingCoin) {
         const flying = phase === "flying" || phase === "settling";
         const lift = Math.max(0, restPos.y - 1.2);
-        const lookY = flying ? 1.2 + lift * 0.68 : 1.2;
+        const lookY = flying ? 1.2 + lift * 0.82 : 1.2;
         wantLook.set(restPos.x, lookY, restPos.z);
         const offsetX = homePos.x - homeLook.x;
         const offsetY = homePos.y - homeLook.y;
