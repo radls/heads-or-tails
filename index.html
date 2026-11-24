@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#14110e" />
+    <meta name="description" content="Heads or Tails — a photoreal 3D coin flip. Swipe to toss, then read the face from the physics." />
+    <title>Heads or Tails</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14.5' fill='%23d7b56a' stroke='%231c1814' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='16' r='10.5' fill='none' stroke='%23fff6e4' stroke-width='1.2'/%3E%3Cpath fill='%231c1814' d='M11 9.5h3.1v4.4h3.8V9.5H21v13h-3.1v-5.2h-3.8V22.5H11z'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <canvas id="view" aria-hidden="true"></canvas>
+    <div id="vignette" aria-hidden="true"></div>
+    <div id="ui">
+      <p class="sr-only">Swipe upward to flip the coin. Tap the resting coin to inspect it. Space or Enter also flips.</p>
+      <header>
+        <button id="menu-btn" type="button" aria-expanded="false" aria-controls="menu" aria-label="Open menu">
+          <span class="dots" aria-hidden="true"></span>
+        </button>
+        <p id="coin-name">Washington quarter</p>
+      </header>
+      <p id="result" aria-live="polite"></p>
+      <button id="done-btn" type="button" hidden>Done</button>
+      <div id="menu" hidden>
+        <div id="scrim"></div>
+        <div class="menu-card" role="dialog" aria-label="Menu">
+          <div class="tabs" role="tablist">
+            <button type="button" role="tab" data-tab="coins" aria-selected="true">Coins</button>
+            <button type="button" role="tab" data-tab="history" aria-selected="false" tabindex="-1">History</button>
+            <button type="button" role="tab" data-tab="settings" aria-selected="false" tabindex="-1">Settings</button>
+            <button type="button" role="tab" data-tab="about" aria-selected="false" tabindex="-1">About</button>
+          </div>
+          <div class="menu-body">
+            <section id="panel-coins" data-panel="coins">
+              <div id="coin-list" class="coin-list"></div>
+            </section>
+            <section id="panel-history" data-panel="history" hidden>
+              <dl class="tally">
+                <div><dt>Heads</dt><dd><span id="stat-heads">0</span> <small id="stat-heads-pct">0%</small></dd></div>
+                <div><dt>Tails</dt><dd><span id="stat-tails">0</span> <small id="stat-tails-pct">0%</small></dd></div>
+                <div><dt>Total</dt><dd id="stat-total">0</dd></div>
+                <div><dt>Streak</dt><dd id="stat-streak">—</dd></div>
+                <div><dt>Longest</dt><dd id="stat-longest">0</dd></div>
+              </dl>
+              <h3>By coin</h3>
+              <ul id="per-coin" class="per-coin"></ul>
+              <h3>Last 100</h3>
+              <ul id="history-list" class="history"></ul>
+              <button id="reset-btn" type="button">Reset statistics</button>
+              <div id="reset-confirm" hidden>
+                <p>Clear every flip stored in this browser?</p>
+                <div class="confirm-row">
+                  <button id="reset-yes" type="button">Clear statistics</button>
+                  <button id="reset-no" type="button">Cancel</button>
+                </div>
+              </div>
+            </section>
+            <section id="panel-settings" data-panel="settings" hidden>
+              <label class="switch"><input id="set-sound" type="checkbox" checked /> Sound</label>
+              <label class="switch"><input id="set-vibration" type="checkbox" checked /> Vibration</label>
+              <label class="switch"><input id="set-motion" type="checkbox" /> Reduce motion</label>
+              <label class="field">Quality
+                <select id="set-quality">
+                  <option value="auto">Auto</option>
+                  <option value="high">High</option>
+                  <option value="low">Low</option>
+                </select>
+              </label>
+              <label class="field">Table
+                <select id="set-table">
+                  <option value="wood">Wood</option>
+                  <option value="felt">Felt</option>
+                  <option value="slate">Slate</option>
+                </select>
+              </label>
+            </section>
+            <section id="panel-about" data-panel="about" hidden>
+              <p>Heads or Tails tosses a rigid-body coin and reads the face from how it lands.</p>
+              <p>Coin designs: public-domain U.S. Mint designs; images via Wikimedia Commons (see ASSETS.md)</p>
+              <p>Swipe up to flip. A harder swipe throws higher and spins faster. Tap the resting coin to turn it over in your hands. Nothing here phones home.</p>
+            </section>
+          </div>
+          <p id="version"></p>
+        </div>
+      </div>
+    </div>
+    <p id="boot-error" role="alert"></p>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

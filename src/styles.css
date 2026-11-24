@@ -1,0 +1,408 @@
+:root {
+  color-scheme: dark;
+  --bg: #14110e;
+  --ink: #f6f1e8;
+  --muted: #d2c6b6;
+  --line: rgba(255, 244, 230, 0.16);
+  --glass: rgba(32, 27, 23, 0.82);
+  --gold: #e6c98a;
+  --danger: #f0c7b0;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.38);
+  font-family: "Segoe UI", "Liberation Sans", "Nimbus Sans", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+#view {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+#vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 58%, rgba(0, 0, 0, 0.32) 100%);
+}
+
+#ui {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+button, select, label, .menu-card, #scrim, #done-btn {
+  pointer-events: auto;
+}
+
+button, select {
+  font: inherit;
+  color: var(--ink);
+}
+
+button {
+  min-height: 44px;
+  min-width: 44px;
+  border: 1px solid var(--line);
+  background: rgba(28, 24, 20, 0.72);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+button:focus-visible, select:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+header {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: max(12px, env(safe-area-inset-top)) 16px 0 max(12px, env(safe-area-inset-left));
+}
+
+#menu-btn {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+}
+
+.dots {
+  width: 18px;
+  height: 14px;
+  background:
+    radial-gradient(circle, var(--ink) 1.6px, transparent 1.8px) 0 0 / 6px 100% no-repeat,
+    radial-gradient(circle, var(--ink) 1.6px, transparent 1.8px) 6px 0 / 6px 100% no-repeat,
+    radial-gradient(circle, var(--ink) 1.6px, transparent 1.8px) 12px 0 / 6px 100% no-repeat;
+}
+
+#coin-name {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.65);
+}
+
+#result {
+  position: fixed;
+  left: 50%;
+  top: 18%;
+  transform: translateX(-50%) translateY(6px);
+  margin: 0;
+  min-width: 8ch;
+  text-align: center;
+  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: clamp(44px, 12vw, 92px);
+  letter-spacing: 0.14em;
+  line-height: 1;
+  padding: 14px 28px 16px;
+  border-radius: 18px;
+  background: rgba(20, 16, 13, 0.78);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  opacity: 0;
+  pointer-events: none;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+#result.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+html[data-motion="full"] #result.show {
+  animation: rise 1.7s ease both;
+}
+
+@keyframes rise {
+  0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  12% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  78% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+#done-btn {
+  position: fixed;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  min-width: 132px;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+#done-btn[hidden] { display: none; }
+
+#menu {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+}
+
+#menu[hidden] { display: none; }
+
+#scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 6, 5, 0.46);
+}
+
+.menu-card {
+  position: relative;
+  z-index: 1;
+  width: min(440px, calc(100% - 24px));
+  max-height: min(78dvh, 740px);
+  margin: max(72px, calc(env(safe-area-inset-top) + 60px)) auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 22px;
+  background: var(--glass);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(22px);
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 10px 6px;
+  background: transparent;
+  font-size: 14px;
+}
+
+.tabs button[aria-selected="true"] {
+  background: rgba(230, 201, 138, 0.16);
+  color: var(--gold);
+  border-color: rgba(230, 201, 138, 0.45);
+}
+
+.menu-body {
+  overflow: auto;
+  padding: 4px 4px 8px;
+  min-height: 0;
+}
+
+#version {
+  margin: 0;
+  padding: 4px 8px 6px;
+  text-align: center;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  font-size: 13px;
+}
+
+.coin-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: 8px;
+}
+
+.coin-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px 12px;
+  background: rgba(255, 248, 238, 0.03);
+}
+
+.coin-btn img {
+  width: var(--thumb, 56px);
+  height: var(--thumb, 56px);
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: inset 0 0 0 2px rgba(255, 244, 220, 0.35), 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+.coin-btn.is-active {
+  border-color: rgba(230, 201, 138, 0.7);
+  background: rgba(230, 201, 138, 0.1);
+}
+
+.coin-short, .coin-value {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coin-short { font-size: 13px; }
+.coin-value { color: var(--gold); font-size: 12px; letter-spacing: 0.06em; }
+
+.tally {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 0 0 8px;
+}
+
+.tally div:nth-child(n + 4) { grid-column: span 1; }
+
+.tally div {
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(255, 248, 238, 0.04);
+}
+
+.tally dt {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tally dd {
+  margin: 4px 0 0;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tally small { color: var(--muted); font-size: 13px; }
+
+h3 {
+  margin: 14px 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.history, .per-coin {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chip, .per-coin li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 248, 238, 0.05);
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.chip .mark {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+.chip.heads .mark { background: #e6c98a; color: #1c1814; }
+.chip.tails .mark { background: #8ea0b5; color: #14181d; }
+.chip time, .per-coin li span:last-child { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.empty { color: var(--muted); padding: 8px; }
+
+#reset-btn, #reset-yes, #reset-no { width: 100%; margin-top: 12px; }
+
+#reset-confirm {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255, 248, 238, 0.04);
+}
+
+#reset-confirm p { margin: 0 0 8px; color: var(--ink); }
+
+.confirm-row { display: flex; gap: 8px; }
+.confirm-row button { flex: 1; margin-top: 0; }
+#reset-yes { background: rgba(240, 199, 176, 0.16); color: var(--danger); }
+
+.switch, .field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.switch input { width: 22px; height: 22px; accent-color: #c6a15a; }
+
+.field select {
+  min-height: 44px;
+  min-width: 140px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #1c1814;
+  padding: 0 10px;
+}
+
+#panel-about p { color: var(--ink); line-height: 1.5; }
+#panel-about p + p { color: var(--muted); }
+
+#boot-error {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  margin: 0;
+  color: #ffd0c2;
+  z-index: 6;
+}
+
+#boot-error:empty { display: none; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (min-width: 900px) {
+  .menu-card { margin-top: 88px; }
+  #coin-name { font-size: 16px; }
+}
